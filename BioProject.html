@@ -1,0 +1,252 @@
+<html>
+    <head>
+        <script src="jquery-3.3.1.min.js"></script>
+        <style>
+            .block {
+                position: absolute;
+                width: 50%;
+                height: 50%;
+                border: 1px solid black;
+                text-align: center;
+                font-size: 30px;
+
+            }
+            #centre {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: white;
+                border:1px solid blue;
+                padding: 20px;
+                cursor: pointer;
+                text-align: center;
+
+            }
+            #results {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                border: 1px solid blue;
+                background-color: white;
+                padding: 20px;
+                display: none;
+
+
+            }
+            #Instructions {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: white;
+                border:1px solid blue;
+                padding: 20px;
+                cursor: pointer;
+                text-align: center;
+               /*display: none;*/
+
+
+            }
+        </style>
+        <title>Reaction Time Test</title>
+    </head>
+    <body>
+        <div id="block0" class="block" style="top:0; left:0; background-color:grey;"> </div>
+        <div id="block1" class="block" style="top:0; right:0; background-color:grey;"> </div>
+        <div id="block2" class="block" style="bottom:0; left:0; background-color:grey;"> </div>
+        <div id="block3" class="block" style="bottom:0; right:0; background-color:grey;"> </div>
+        <div id="centre"> 
+            4 squares will appear on the screen, each a different color
+            <br>    
+            Click the 
+            <span style="color: red; font-weight:bold;">red</span> square as quickly as you can.
+            <br> There will be 5 attempts followed by your results
+            <br>
+            <br> Click in this box to start
+        </div>
+        <div id="results"> results</div>
+        <div id="Instructions">
+
+            <b>Step 1:</b> Enter your name and age in the box provided 
+            <br> 
+            Name: <input type="text" name="name" id="name"> 
+            <br>
+            Age: <input type="text" name="age" id="age">
+            <br>
+            <br>
+            <br>
+            <b>Step 2:</b> click "Copy Results to Clipboard"
+            <br>
+            <input type="button" value="Copy Results to Clipboard" onclick="copyResults()">
+            <br>
+            <br>
+            <br>
+            <b>Step 3:</b> Open the results page
+            <br>
+            <a target="_blank" href="https://docs.google.com/spreadsheets/d/1gl4sd_6blOBQQwclr7SQlSgI3KqL4J95RM9FIjgtt38/edit?usp=sharing">Go Here</a>
+            <br>
+            <br>
+            <br>
+            <b>Step 4:</b> Select the next empty row and paste your results
+            <br>
+            <br>
+            <img src="Sheets Image.png" width="90%" >
+            <br>
+            <br>
+            <br>
+            Thank you for participating!  
+            <br>
+            <br>
+            <input type="button" value="You're Welcome!" onclick="yourWelcome()">
+        </div>
+        <script>
+            var NUM_OF_TESTS = 5;
+            var colors = ["blue", "red", "green", "yellow"];
+            var resultTimes = new Array(NUM_OF_TESTS);
+            var trialNbr;
+            var startTime, endTime;
+            var inTest = false;
+            function setClipboard(value) {
+                var tempInput = document.createElement("input");
+                tempInput.style = "position: absolute; left: -1000px; top: -1000px";
+                tempInput.value = value;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand("copy");
+                document.body.removeChild(tempInput);
+            }
+            function yourWelcome() {
+                $("#Instructions").hide();
+                $("#results").hide();
+                $("#centre").show();
+
+            }
+            var tab="\t";
+            function copyResults() {
+                //we gonna copy their name age and results to da clipboard
+                var res=""; 
+                res += $("#name").val();
+                res += tab; 
+                res += $("#age").val();
+                res += tab; 
+                for (var i = 0; i < resultTimes.length; i++) {
+                    res +=resultTimes[i];
+                    res += tab;
+                }
+                setClipboard(res);
+            }
+            function clickToStart(){
+                //alert("lia is da bomb");
+                inTest = true;
+                $("#centre").hide();
+                $("#results").hide();
+                for (var i = 0; i < resultTimes.length; i++) {
+                    resultTimes[i] = 0;
+                }
+                
+                trialNbr = -1;
+                nextTest();
+                
+            }
+            function done(){
+                //tbd
+                inTest = false;
+                $("#centre").show();
+                showResults();
+            
+            }
+            function submitResults() {
+                $("#Instructions").show();
+
+            }
+            function showResults(){
+                $("#centre").hide();
+                var total = 0;
+                var totalText = "";
+                for (var i = 0; i < resultTimes.length; i++) {
+                    total = total + resultTimes[i];
+                    totalText += "Trial " + (i + 1) + ": " + resultTimes[i] + "ms<br>";
+
+                }
+                var avg = total / resultTimes.length;
+
+                $("#results").html(totalText + "<br><b>Average:</b> " + avg + "ms <br><br> Submit your results? <input type='button' value='Yes' onclick='submitResults()'><input type='button' value='Try Again' onclick='hideResults()'>");
+                $("#results").show();
+            }
+            function hideResults() {
+                $("#results").hide();
+                $("#centre").show();
+            }
+            function randomColors(){
+                for (var i = colors.length - 1; i > 0; i--) {
+                    var j = Math.floor(Math.random() * (i + 1));
+                    var temp = colors[i];
+                    colors[i] = colors[j];
+                    colors[j] = temp;
+
+                }
+
+                for (var i = 0; i < colors.length; i++) {
+                    $("#block" + i).css("background-color", colors[i]);
+                    $("#block" + i).html("");
+
+                }
+                startTime = Date.now();
+            }
+            function nextTest(){
+                // clear squares to grey
+                $(".block").css("background-color", "grey");
+                // see if we're done
+                trialNbr++;
+                if(trialNbr==NUM_OF_TESTS){
+                    done();
+                    return;
+
+                }
+                // start test
+                setTimeout(randomColors, (2000 + Math.random() * 2000));
+
+                
+            }
+
+            function yoMama(eventObject){
+                if (!inTest) return;
+        
+                 if ($(eventObject.target).css("background-color") != "rgb(255, 0, 0)") {
+                     $(eventObject.target).html("WRONG");
+                     return;
+                 }
+                 //good for u! they hit red btw
+                 endTime = Date.now();
+                 resTime = (endTime - startTime);
+                 resultTimes[trialNbr] = resTime;
+
+                 //nothinggg, clear contents
+                 $(".block").html("");
+
+                 eventObject.target.innerHTML = "" + resTime + "ms";
+
+                 nextTest();
+
+                return false;
+
+            }
+            function myLoadFunction(){
+                $("#centre").click(clickToStart);
+                $(".block").click(yoMama);
+
+
+            }
+            $(myLoadFunction);
+        
+        </script>
+
+
+    </body>
+
+
+
+
+</html>
